@@ -15,7 +15,11 @@ A little example is given inside the example folder. To build it, just do:
 > make example
 ```
 
-It will generate two files: `test_static` and `test_dynamic`. The first one has been compiled with "statically", not the second.
+It will generate two files: `test_static` and `test_dynamic`. The first one has been compiled with "statically", not the second. To run one of them:
+
+```Shell
+> ./test_static dico.txt
+```
 
 # Functions available
 
