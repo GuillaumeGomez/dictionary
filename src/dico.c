@@ -41,7 +41,7 @@ int get_equivalence(char letter) {
   return pos;
 }
 
-bool find_word(void *dico, const char *word) {
+bool intern_find_word(void *dico, const char *word) {
   char **d = dico;
   int pos = 0;
 
@@ -57,9 +57,16 @@ bool find_word(void *dico, const char *word) {
     ++pos;
   }
   return (d[get_equivalence(' ')] ? true : false);
+
 }
 
-void free_dico(void **dico) {
+bool find_word(const dictionary *dico, const char *word) {
+  if (!dico || !word || !dico->number)
+    return false;
+  return intern_find_word(dico->data, word);
+}
+
+void intern_free_dico(void **dico) {
   int i = 0;
   char **d = *dico;
 
@@ -67,10 +74,18 @@ void free_dico(void **dico) {
     char **x = (char**)d[i];
 
     if (x)
-      free_dico((void**)&x);
+      intern_free_dico((void**)&x);
     ++i;
   }
   free(*dico);
+}
+
+void free_dico(dictionary **dico) {
+  if (!dico || !*dico)
+    return;
+  intern_free_dico((void**)dico[0]->data);
+  free(*dico);
+  *dico = NULL;
 }
 
 bool check_forbidden_character(const char *word) {
@@ -88,26 +103,24 @@ bool check_forbidden_character(const char *word) {
   return true;
 }
 
-void *init_dico() {
-  char **dico = 0;
+dictionary *init_dico() {
+  char **data = 0;
+  dictionary *dict = 0;
 
-  if (!(dico = malloc(sizeof(char**) * (DICO_SIZE + 1)))) {
-    return dico;
+  if (!(dict = malloc(sizeof(*dict))))
+    return dict;
+  if (!(data = malloc(sizeof(char**) * (DICO_SIZE + 1)))) {
+    free(dict);
+    return dict;
   }
-  memset(dico, 0, (DICO_SIZE + 1) * sizeof(char**));
-  return dico;
+  memset(data, 0, (DICO_SIZE + 1) * sizeof(char**));
+  dict->data = data;
+  dict->number = 0;
+  return dict;
 }
 
-DictionaryCodes add_word(void **dico, const char *word) {
-  if (check_forbidden_character(word) == false)
-    return INVALID_CHARACTER;
-  if (*dico == NULL) {
-    return INVALID_DICO;
-  }
-  if (find_word(*dico, word)) {
-    return WORD_ALREADY_EXISTS;
-  }
-  char **d = (char**)*dico;
+DictionaryCodes intern_add_word(void **dico, const char *word) {
+  char **d = (char**)dico;
   int pos = 0;
   int eq;
 
@@ -134,7 +147,24 @@ DictionaryCodes add_word(void **dico, const char *word) {
   return WORD_ADDED;
 }
 
-void intern_print_dico(void *dico, char **to_print, int pos, int *actual_size) {
+DictionaryCodes add_word(dictionary *dict, const char *word) {
+  DictionaryCodes ret;
+
+  if (dict == NULL) {
+    return INVALID_DICO;
+  }
+  if (check_forbidden_character(word) == false)
+    return INVALID_CHARACTER;
+  if (find_word(dict, word)) {
+    return WORD_ALREADY_EXISTS;
+  }
+  ret = intern_add_word((void**)dict->data, word);
+  if (ret == WORD_ADDED)
+    dict->number += 1;
+  return ret;
+}
+
+void intern_print_dico(void *dico, char **to_print, int pos, int *actual_size, unsigned int *total) {
   char **d = dico;
   int i = 0;
 
@@ -149,7 +179,9 @@ void intern_print_dico(void *dico, char **to_print, int pos, int *actual_size) {
     if (x) {
       to_print[0][pos] = joint[i];
       to_print[0][pos + 1] = 0;
-      intern_print_dico((void*)x, to_print, pos + 1, actual_size);
+      intern_print_dico((void*)x, to_print, pos + 1, actual_size, total);
+      if (!*total)
+	return;
     }
     ++i;
   }
@@ -158,16 +190,18 @@ void intern_print_dico(void *dico, char **to_print, int pos, int *actual_size) {
   if (d[i]) {
     to_print[0][pos] = 0;
     printf("%s\n", *to_print);
+    *total -= 1;
   }
 }
 
 // very slow function !
-void print_dico(void *dico) {
+void print_dico(const dictionary *dict) {
   char *to_print;
   int actual_size = 128;
+  unsigned int total = dict->number;
 
   if (!(to_print = malloc(sizeof(*to_print) * actual_size)))
     return;
-  intern_print_dico(dico, &to_print, 0, &actual_size);
+  intern_print_dico(dict->data, &to_print, 0, &actual_size, &total);
   free(to_print);
 }

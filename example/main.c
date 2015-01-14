@@ -34,37 +34,37 @@ void find_and_print_word(void *dico, const char *w) {
 int main(int ac, char **av) {
   FILE *fd;
   char *line = NULL;
-  void *dico;
+  dictionary *dict;
   size_t n;
 
   if (ac < 2) {
     fprintf(stderr, "Missing dictionary file.\n");
     return EXIT_FAILURE;
   }
-  if (!(dico = init_dico())) {
+  if (!(dict = init_dico())) {
     fprintf(stderr, "init_dico function failed\n");
     return EXIT_FAILURE;
   }
   if (!(fd = fopen(av[1], "r"))) {
     fprintf(stderr, "%s: No such file or directory.\n", av[1]);
-    free_dico(&dico);
+    free_dico(&dict);
     return EXIT_FAILURE;    
   }
-  printf("Creation of dico.\n");
+  printf("Creation of the dictionary.\n");
   while (getline(&line, &n, fd) > 0) {
     line[strlen(line) - 1] = 0;
-    add_word(&dico, line);
+    add_word(dict, line);
   }
   free(line);
   fclose(fd);
   printf("Dico is ready !\n");
-  find_and_print_word(dico, "test");
-  find_and_print_word(dico, "salut");
-  find_and_print_word(dico, "salu");
-  find_and_print_word(dico, "bonjour");
-  printf("let's show the dico content:\n");
-  print_dico(dico);
-  printf("let's free the dico !\n");
-  free_dico(&dico);
+  find_and_print_word(dict, "test");
+  find_and_print_word(dict, "salut");
+  find_and_print_word(dict, "salu");
+  find_and_print_word(dict, "bonjour");
+  printf("let's show the dictionary content:\n");
+  print_dico(dict);
+  printf("let's free the dictionary !\n");
+  free_dico(&dict);
   return EXIT_SUCCESS;
 }
