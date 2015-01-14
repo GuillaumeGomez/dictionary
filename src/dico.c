@@ -205,3 +205,7 @@ void print_dico(const dictionary *dict) {
   intern_print_dico(dict->data, &to_print, 0, &actual_size, &total);
   free(to_print);
 }
+
+unsigned int get_words_number(const dictionary *dict) {
+  return dict ? dict->number : 0;
+}

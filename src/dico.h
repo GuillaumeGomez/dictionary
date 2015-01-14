@@ -30,5 +30,7 @@ DictionaryCodes add_word(dictionary *dict, const char *word);
 // Displays the words contained in the dictionary
 // However, please use this function carefuly, it's very slow !
 void print_dico(const dictionary *dict);
+// Returns the number of words stored in the dictionary.
+unsigned int get_words_number(const dictionary *dict);
 
 #endif

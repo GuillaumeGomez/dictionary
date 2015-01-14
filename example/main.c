@@ -48,7 +48,7 @@ int main(int ac, char **av) {
   if (!(fd = fopen(av[1], "r"))) {
     fprintf(stderr, "%s: No such file or directory.\n", av[1]);
     free_dico(&dict);
-    return EXIT_FAILURE;    
+    return EXIT_FAILURE;
   }
   printf("Creation of the dictionary.\n");
   while (getline(&line, &n, fd) > 0) {
@@ -57,7 +57,7 @@ int main(int ac, char **av) {
   }
   free(line);
   fclose(fd);
-  printf("Dico is ready !\n");
+  printf("Dictionary is ready !\nThere is actually %d words in it.\n", get_words_number(dict));
   find_and_print_word(dict, "test");
   find_and_print_word(dict, "salut");
   find_and_print_word(dict, "salu");
