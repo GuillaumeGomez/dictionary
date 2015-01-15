@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../src/dico.h"
+#include "../src/dictionary.h"
 
 void find_and_print_word(void *dico, const char *w) {
   printf("Did we find '%s' ? %s\n", w, find_word(dico, w) == true ? "Yes !" : "No...");
@@ -41,30 +41,36 @@ int main(int ac, char **av) {
     fprintf(stderr, "Missing dictionary file.\n");
     return EXIT_FAILURE;
   }
-  if (!(dict = init_dico())) {
+  if (!(dict = init_dictionary())) {
     fprintf(stderr, "init_dico function failed\n");
     return EXIT_FAILURE;
   }
   if (!(fd = fopen(av[1], "r"))) {
     fprintf(stderr, "%s: No such file or directory.\n", av[1]);
-    free_dico(&dict);
+    free_dictionary(&dict);
     return EXIT_FAILURE;
   }
-  printf("Creation of the dictionary.\n");
+  printf("== Creation of the dictionary. ==\n");
   while (getline(&line, &n, fd) > 0) {
     line[strlen(line) - 1] = 0;
     add_word(dict, line);
   }
   free(line);
   fclose(fd);
-  printf("Dictionary is ready !\nThere is actually %d words in it.\n", get_words_number(dict));
+  printf("== Dictionary is ready ! ==\n== There is actually %d words in it. ==\n", get_words_number(dict));
   find_and_print_word(dict, "test");
   find_and_print_word(dict, "salut");
   find_and_print_word(dict, "salu");
   find_and_print_word(dict, "bonjour");
-  printf("let's show the dictionary content:\n");
-  print_dico(dict);
-  printf("let's free the dictionary !\n");
-  free_dico(&dict);
+  printf("== Let's show the dictionary content: ==\n");
+  print_dictionary(dict);
+  printf("== Now we remove one word. ==\n");
+  printf("removing '%s': %s\n", "salut", remove_word(dict, "salut") == WORD_REMOVED ? "Done" : "Error");
+  print_dictionary(dict);
+  printf("== Now we remove another word. ==\n");
+  printf("removing '%s': %s\n", "test", remove_word(dict, "test") == WORD_REMOVED ? "Done" : "Error");
+  print_dictionary(dict);
+  printf("== Let's free the dictionary ! ==\n");
+  free_dictionary(&dict);
   return EXIT_SUCCESS;
 }

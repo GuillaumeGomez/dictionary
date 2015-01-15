@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "dico.h"
+#include "dictionary.h"
 
 const char joint[] = "abcdefghijklmnopqrstuvwxyz-";
 
@@ -66,24 +66,26 @@ bool find_word(const dictionary *dico, const char *word) {
   return intern_find_word(dico->data, word);
 }
 
-void intern_free_dico(void **dico) {
+void intern_free_dico(char **dico) {
   int i = 0;
-  char **d = *dico;
+  char **d = dico;
 
   while (i < DICO_SIZE) {
     char **x = (char**)d[i];
 
-    if (x)
-      intern_free_dico((void**)&x);
+    if (x) {
+      intern_free_dico(x);
+      free(x);
+    }
     ++i;
   }
-  free(*dico);
 }
 
-void free_dico(dictionary **dico) {
+void free_dictionary(dictionary **dico) {
   if (!dico || !*dico)
     return;
-  intern_free_dico((void**)dico[0]->data);
+  intern_free_dico(dico[0]->data);
+  free(dico[0]->data);
   free(*dico);
   *dico = NULL;
 }
@@ -103,7 +105,7 @@ bool check_forbidden_character(const char *word) {
   return true;
 }
 
-dictionary *init_dico() {
+dictionary *init_dictionary() {
   char **data = 0;
   dictionary *dict = 0;
 
@@ -117,6 +119,58 @@ dictionary *init_dico() {
   dict->data = data;
   dict->number = 0;
   return dict;
+}
+
+bool remove_if_possible(char **dico, const char *word, int pos) {
+  int i = 0;
+  int eq = get_equivalence(word[pos]);
+  bool other = false, can_remove = false;
+
+  while (i < DICO_SIZE + 1) {
+    if (dico[i]) {
+    }
+    if (dico[i] && i != eq) {
+      other = true;
+    }
+    if (i == eq && word[pos])
+      can_remove = remove_if_possible((char**)dico[eq], word, pos + 1);
+    ++i;
+  }
+  if (can_remove) {
+    if (word[pos]) {
+      free((char**)dico[eq]);
+    }
+    dico[eq] = 0;
+  }
+  // the word doesn't exist anymore so we remove its end limiter
+  if (!word[pos])
+    dico[eq] = 0;
+  return other == false && can_remove == true;
+}
+
+DictionaryCodes intern_remove_word(char **dico, const char *word) {
+  int pos = 0;
+  char **d = dico;
+  int eq;
+
+  if (intern_find_word((void*)dico, word) == false)
+    return WORD_NOT_FOUND;
+  remove_if_possible(dico, word, pos);
+  return WORD_REMOVED;
+}
+
+DictionaryCodes remove_word(dictionary *dict, const char *word) {
+  DictionaryCodes ret;
+
+  if (!dict || !word) {
+    return INVALID_ARGUMENT;
+  } else if (!word[0]) {
+    return WORD_NOT_FOUND;
+  }
+  ret = intern_remove_word((char**)dict->data, word);
+  if (ret == WORD_REMOVED)
+    dict->number -= 1;
+  return ret;
 }
 
 DictionaryCodes intern_add_word(void **dico, const char *word) {
@@ -150,8 +204,8 @@ DictionaryCodes intern_add_word(void **dico, const char *word) {
 DictionaryCodes add_word(dictionary *dict, const char *word) {
   DictionaryCodes ret;
 
-  if (dict == NULL) {
-    return INVALID_DICO;
+  if (dict == NULL || !word || !word[0]) {
+    return INVALID_ARGUMENT;
   }
   if (check_forbidden_character(word) == false)
     return INVALID_CHARACTER;
@@ -195,7 +249,7 @@ void intern_print_dico(void *dico, char **to_print, int pos, int *actual_size, u
 }
 
 // very slow function !
-void print_dico(const dictionary *dict) {
+void print_dictionary(const dictionary *dict) {
   char *to_print;
   int actual_size = 128;
   unsigned int total = dict->number;

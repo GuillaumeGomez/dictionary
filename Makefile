@@ -1,4 +1,4 @@
-# dictionary - Copyright (c) 2014 Gomez Guillaume.
+# Dictionary - Copyright (c) 2015 Gomez Guillaume.
 #
 # This software is provided 'as-is', without any express or implied warranty.
 # In no event will the authors be held liable for any damages arising from
@@ -26,7 +26,12 @@ LIBNAME=	libdictionary
 
 SRCS=		$(wildcard ./src/*.c)
 
+CSRCS=		$(wildcard ./src/*.c) \
+		$(wildcard ./example/*.c)
+
 OBJS=		$(SRCS:.c=.o)
+
+COBJS=		$(CSRCS:.c=.o)
 
 dictionary: $(OBJS)
 	gcc $(STATIC_OPTIONS) $(SRCS)
@@ -39,6 +44,9 @@ example: dictionary
 	gcc -static -Wall -I./src/ example/main.c $(LIBNAME).a -o test_static
 
 all: example
+
+complete:
+	gcc $(CSRCS) -o complete
 
 clean:
 	rm $(LIBNAME).a
