@@ -33,6 +33,8 @@ OBJS=		$(SRCS:.c=.o)
 
 COBJS=		$(CSRCS:.c=.o)
 
+RM=		rm -f
+
 dictionary: $(OBJS)
 	gcc $(STATIC_OPTIONS) $(SRCS)
 	ar rcs $(LIBNAME).a *.o
@@ -49,7 +51,7 @@ complete:
 	gcc $(CSRCS) -o complete
 
 clean:
-	rm $(LIBNAME).a
-	rm $(LIBNAME).so
+	$(RM) $(LIBNAME).a
+	$(RM) $(LIBNAME).so
 
 re: clean example
