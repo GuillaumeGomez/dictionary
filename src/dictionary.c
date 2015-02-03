@@ -150,8 +150,6 @@ bool remove_if_possible(char **dico, const char *word, int pos) {
 
 DictionaryCodes intern_remove_word(char **dico, const char *word) {
   int pos = 0;
-  char **d = dico;
-  int eq;
 
   if (intern_find_word((void*)dico, word) == false)
     return WORD_NOT_FOUND;
